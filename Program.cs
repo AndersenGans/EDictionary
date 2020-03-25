@@ -33,6 +33,8 @@ namespace E2Dictionary
 	internal class Program
 	{
 		private static int _numberOfWrong;
+		private static string _fileName = "EnWords.json";
+		private static string _filePath = AppDomain.CurrentDomain.BaseDirectory;
 
 		private static void Main()
 		{
@@ -52,19 +54,24 @@ namespace E2Dictionary
 			//	t = Console.ReadLine();
 			//         }
 
-			//File.WriteAllText("C:\\Users\\Oleg\\Desktop\\EnWords.json", JsonConvert.SerializeObject(_words));
+			//File.WriteAllText(Path.GetFullPath(Path.Combine(_filePath, @"..\..\..\", _fileName)), JsonConvert.SerializeObject(_words));
 
 			//Console.ReadKey();
 
 			Console.OutputEncoding = Encoding.Unicode;
 			Console.InputEncoding = Encoding.Unicode;
-			var test = JsonConvert.DeserializeObject<Test>(File.ReadAllText("EnWords.json"));
+			Console.ForegroundColor = ConsoleColor.Yellow;
 
-			Console.WriteLine(
-				"Start the test - 1\n"
-				+ "Print 5 random words - 2");
-
+			var test = JsonConvert.DeserializeObject<Test>(File.ReadAllText(Path.Combine(_filePath, _fileName)));
+			
 			start:
+			Console.Write(
+				"Start the test - 1\n"
+				+ "Print 5 random words - 2\n"
+				+ "Add new words - 3\n");
+
+			Console.ForegroundColor = ConsoleColor.White;
+
 			int.TryParse(Console.ReadLine(), out var type);
 
 			switch (type)
@@ -73,28 +80,63 @@ namespace E2Dictionary
 					DoTest(test);
 					break;
 				case 2:
-					Print5RandomWords(test);
-					break;
+					test = Print5RandomWords(test);
+					goto start;
+				case 3:
+					test = AddNewWords(test);
+					goto start;
 				default:
+					Console.ForegroundColor = ConsoleColor.Yellow;
 					Console.WriteLine("Try again");
+					Console.ForegroundColor = ConsoleColor.White;
 					goto start;
 			}
 		}
 
-		private static void Print5RandomWords(Test test)
+		private static Test AddNewWords(Test test)
 		{
-			var newList = test.WordItems.Where(x => !x.WasUsedInRandomPrinting).ToList();
+			var _test = test;
+
+			while (true)
+			{
+				var newWord = new WordItem();
+				Console.Write("New word: ");
+				newWord.Word = Console.ReadLine();
+				Console.Write("Translation: ");
+				newWord.Translation = Console.ReadLine();
+				Console.Write("Transcription: ");
+				newWord.Transcription = $"[{Console.ReadLine()}]";
+				_test.WordItems.Add(newWord);
+				Console.Write("Enough new words? (y/n): ");
+
+				if(Console.ReadLine() == "y")
+				{
+					Console.ForegroundColor = ConsoleColor.Green;
+					File.WriteAllText(Path.GetFullPath(Path.Combine(_filePath, @"..\..\..\", _fileName)), JsonConvert.SerializeObject(_test));
+					Console.WriteLine("Those were saved.");
+					Console.ForegroundColor = ConsoleColor.White;
+					return _test;
+				}
+			}
+		}
+
+		private static Test Print5RandomWords(Test test)
+		{
+			var _test = test;
+
+			var newList = _test.WordItems.Where(x => !x.WasUsedInRandomPrinting).ToList();
 
 			for (var i = 0; i < 5; i++)
 			{
 				var rand = new Random().Next(0, newList.Count - 1);
 				Console.WriteLine($"{newList[rand].Word};");
-				test.WordItems[test.WordItems.FindIndex(x => x.Word == newList[rand].Word)].WasUsedInRandomPrinting = true;
+				_test.WordItems[_test.WordItems.FindIndex(x => x.Word == newList[rand].Word)].WasUsedInRandomPrinting = true;
 				newList.RemoveAt(rand);
 			}
 
 			// save all changes 
-			File.WriteAllText("EnWords.json", JsonConvert.SerializeObject(test));
+			File.WriteAllText(Path.GetFullPath(Path.Combine(_filePath, @"..\..\..\", _fileName)), JsonConvert.SerializeObject(_test));
+			return _test;
 		}
 
 		private static void DoTest(Test test)
@@ -133,7 +175,7 @@ namespace E2Dictionary
 			};
 
 			// save all changes (word repeats and test repeats)
-			File.WriteAllText("EnWords.json", JsonConvert.SerializeObject(finalData));
+			File.WriteAllText(Path.GetFullPath(Path.Combine(_filePath, @"..\..\..\", _fileName)), JsonConvert.SerializeObject(finalData));
 		}
 
 		private static List<WordItem> GetOldRandomWords(List<WordItem> withoutNewWords, int testRepetitions, int numberOfWordsToTake)
@@ -206,7 +248,9 @@ namespace E2Dictionary
 			{
 				if (items.Count == 0)
 				{
+					Console.ForegroundColor = ConsoleColor.Green;
 					Console.WriteLine($"DONE! (wrong: {_numberOfWrong})");
+					Console.ForegroundColor = ConsoleColor.White;
 					return updatedList;
 				}
 
@@ -225,13 +269,17 @@ namespace E2Dictionary
 
 			if (string.IsNullOrEmpty(result) || isResultCorrect)
 			{
+				Console.ForegroundColor = ConsoleColor.Green;
 				Console.WriteLine($"Correct ({valueToCheck}) - {wordItem.Transcription}");
+				Console.ForegroundColor = ConsoleColor.White;
 			}
 			else
 			{
 				_numberOfWrong++;
 				wordItem.AllMistakes++;
+				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine($"Wrong ({valueToCheck}) - {wordItem.Transcription}");
+				Console.ForegroundColor = ConsoleColor.White;
 			}
 
 			wordItem.AllRepetitions++;
