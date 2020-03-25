@@ -1,0 +1,175 @@
+# Installers
+*.msi
+*.exe
+*.back*.aip
+
+# SetupDevelopmentEventImporter
+/Code/iGM.Importer/SetupDevelopmentEventImporter/Development/
+/Code/iGM.Importer/SetupDevelopmentEventImporter/Live/
+/Code/iGM.Importer/SetupDevelopmentEventImporter/LocalDev/
+/Code/iGM.Importer/SetupDevelopmentEventImporter/TestEnvironment/
+
+# SetupDevelopmentEventImporter
+/Code/iGM.Importer/SetupEventImporter/Development/
+/Code/iGM.Importer/SetupEventImporter/Live/
+/Code/iGM.Importer/SetupEventImporter/LocalDev/
+/Code/iGM.Importer/SetupEventImporter/TestEnvironment/
+
+# iGM.RaceCards
+/Code/iGM.RaceCards/iGM.RaceCardImporter/iGM.RaceCardSetup/Development/
+/Code/iGM.RaceCards/iGM.RaceCardImporter/iGM.RaceCardSetup/Live/
+/Code/iGM.RaceCards/iGM.RaceCardImporter/iGM.RaceCardSetup/LocalDev/
+/Code/iGM.RaceCards/iGM.RaceCardImporter/iGM.RaceCardSetup/TestEnvironment/
+
+# iGM.DbMigrator
+/Code/iGM.DbMigrator/iGM.DbMigrator.Installer/iGM.DbMigrator.Installer-cache/
+/Code/iGM.DbMigrator/iGM.DbMigrator.Installer/iGM.DbMigrator.Installer-SetupFiles/
+
+# iGM.RaceCardImporter
+/Code/iGM.RaceCardImporter/iGM.RaceCardImporter.Installer/iGM.RaceCardImporter.Installer-cache
+/Code/iGM.RaceCardImporter/iGM.RaceCardImporter.Installer/iGM.RaceCardImporter.Installer-SetupFiles
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio cache/options directory
+.vs/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUnit
+*.VisualState.xml
+TestResult.xml
+
+# DNX
+project.lock.json
+artifacts/
+
+*_i.c
+*_p.c
+*_i.h
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# DotCover
+*.dotCover
+
+# Click-Once directory
+publish/
+
+# Publish Web Output
+*.[Pp]ublish.xml
+*.azurePubxml
+
+*.publishproj
+
+# NuGet Packages
+*.nupkg
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+
+# Windows Azure Build Output
+csx/
+*.build.csdef
+
+# Windows Store app package directory
+AppPackages/
+
+# Visual Studio cache files
+# files ending in .cache can be ignored
+*.[Cc]ache
+# but keep track of directories ending in .cache
+!*.[Cc]ache/
+
+# Others
+ClientBin/
+[Ss]tyle[Cc]op.*
+~$*
+*~
+*.dbmdl
+*.dbproj.schemaview
+*.pfx
+*.publishsettings
+node_modules/
+orleans.codegen.cs
+
+# Backup & report files from converting an old project file to a newer Visual Studio version.
+_UpgradeReport_Files/
+Backup*/
+UpgradeLog*.XML
+UpgradeLog*.htm
+
+# Merge
+*.orig
+
+# SQL Server files
+*.mdf
+*.ldf
+
+# Business Intelligence projects
+*.rdl.data
+*.bim.layout
+*.bim_*.settings
+
+# Microsoft Fakes
+FakesAssemblies/
+
+# Node.js Tools for Visual Studio
+.ntvs_analysis.dat
+
+# Rider
+.idea/
+
+# Streaming Library bundle
+Code/iGM.LiveServices/UI/iGM.StreamPlayers/lib/v1.0/streamservice.js
+Code/iGM.MCR/Portal/frontend/.vscode/launch.json
