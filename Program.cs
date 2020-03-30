@@ -15,6 +15,7 @@ namespace E2Dictionary
 
 	internal class WordItem
 	{
+		public int Id { get; set; }
 		public string Word { get; set; }
 		public string Translation { get; set; }
 		public string Transcription { get; set; }
@@ -22,12 +23,20 @@ namespace E2Dictionary
 		public int AllRepetitions { get; set; }
 		public int AllMistakes { get; set; }
 		public bool WasUsedInRandomPrinting { get; set; }
+		public int MaxScoreEnglish { get; set; }
+		public List<RussianWordScoreModel> RussianWordScoreModels { get; set; }
 	}
 
 	internal enum TestType
 	{
 		FromEnglishToRussian = 0,
 		FromRussianToEnglish = 1
+	}
+
+	internal class RussianWordScoreModel
+	{
+		public int MaxScore { get; set; }
+		public string Word { get; set; }
 	}
 
 	internal class Program
@@ -60,11 +69,12 @@ namespace E2Dictionary
 
 			Console.OutputEncoding = Encoding.Unicode;
 			Console.InputEncoding = Encoding.Unicode;
-			Console.ForegroundColor = ConsoleColor.Yellow;
 
 			var test = JsonConvert.DeserializeObject<Test>(File.ReadAllText(Path.Combine(_filePath, _fileName)));
+			test.WordItems = CalculateMaxScoreForAllWords(test.WordItems);
 			
-			start:
+		start:
+			Console.ForegroundColor = ConsoleColor.Yellow;
 			Console.Write(
 				"Start the test - 1\n"
 				+ "Print 5 random words - 2\n"
@@ -106,6 +116,9 @@ namespace E2Dictionary
 				newWord.Translation = Console.ReadLine();
 				Console.Write("Transcription: ");
 				newWord.Transcription = $"[{Console.ReadLine()}]";
+				newWord.Id = _test.WordItems.Max(x => x.Id) + 1;
+				newWord.MaxScoreEnglish = GetEnglishMaxScore(newWord.Word);
+				newWord.RussianWordScoreModels = GetRussianWordScoreModels(newWord.Translation);
 				_test.WordItems.Add(newWord);
 				Console.Write("Enough new words? (y/n): ");
 
@@ -263,14 +276,32 @@ namespace E2Dictionary
 
 		private static WordItem CheckResult(WordItem wordItem, int testType, string result)
 		{
-			var valueToCheck = testType == (int) TestType.FromEnglishToRussian ? wordItem.Translation : wordItem.Word;
+			string valueToCheck;
+			double resultWeight;
+			
+			switch (testType)
+			{
+				case (int)TestType.FromEnglishToRussian:
+					valueToCheck = wordItem.Translation;
+					resultWeight = GetRussianResultCorrectness(result, wordItem.RussianWordScoreModels);
+					break;
+				default:
+				case (int)TestType.FromRussianToEnglish:
+					valueToCheck = wordItem.Word;
+					resultWeight = GetEnglishResultCorrectness(result, wordItem.Word, wordItem.MaxScoreEnglish);
+					break;
+			}
 
-			var isResultCorrect = result.Split(", ").ToList().All(x => valueToCheck.Split(", ").ToList().Any(y => y.Contains(x)));
-
-			if (string.IsNullOrEmpty(result) || isResultCorrect)
+			if (string.IsNullOrEmpty(result) || resultWeight == 1d)
 			{
 				Console.ForegroundColor = ConsoleColor.Green;
 				Console.WriteLine($"Correct ({valueToCheck}) - {wordItem.Transcription}");
+				Console.ForegroundColor = ConsoleColor.White;
+			}
+			else if (resultWeight >= .65d)
+			{
+				Console.ForegroundColor = ConsoleColor.Magenta;
+				Console.WriteLine($"Almost correct, be careful ({valueToCheck}) - {wordItem.Transcription} ({resultWeight * 100:0.##}% correctness)");
 				Console.ForegroundColor = ConsoleColor.White;
 			}
 			else
@@ -278,13 +309,116 @@ namespace E2Dictionary
 				_numberOfWrong++;
 				wordItem.AllMistakes++;
 				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine($"Wrong ({valueToCheck}) - {wordItem.Transcription}");
+				Console.WriteLine($"Wrong ({valueToCheck}) - {wordItem.Transcription} ({resultWeight * 100:0.##}% correctness)");
 				Console.ForegroundColor = ConsoleColor.White;
 			}
 
 			wordItem.AllRepetitions++;
 
 			return wordItem;
+		}
+
+		private static double GetEnglishResultCorrectness(string testValue, string correctValue, int maxScore)
+		{
+			if (string.IsNullOrEmpty(testValue))
+			{
+				return 0;
+			}
+
+			var currentScore = FuzzyMatchingAlgorithm.FuzzyMatch(correctValue, testValue);
+
+			return (double)currentScore / maxScore;
+		}
+
+		private static double GetRussianResultCorrectness(string testValue, List<RussianWordScoreModel> correctScoreModels)
+		{
+			if (string.IsNullOrEmpty(testValue))
+			{
+				return 0;
+			}
+
+			// replace (...) with empty space
+			while (testValue.IndexOf("(") != -1)
+			{
+				testValue.Replace(testValue.Substring(testValue.IndexOf('('), testValue.IndexOf(')') != -1 ? testValue.IndexOf(')') - testValue.IndexOf('(') + 1 : testValue.Length - testValue.IndexOf('(')), "");
+			}
+
+			var splitValues = testValue.Split(", ").Select(x => x.Trim());
+			var scoreModels = new List<RussianWordScoreModel>();
+
+			var averageScore = 0.0d;
+			int iteration = 0;
+
+			foreach (var testWord in splitValues)
+			{
+				var wordScore = 0.0d;
+				
+				foreach(var correctWord in correctScoreModels)
+				{
+					var temp = FuzzyMatchingAlgorithm.FuzzyMatch(correctWord.Word, testWord);
+					var currentScore = (double)temp / correctWord.MaxScore;
+					
+					if(currentScore > wordScore)
+					{
+						wordScore = currentScore;
+					}
+				}
+				iteration++;
+				averageScore += wordScore;
+				wordScore = 0.0;
+			}
+
+			averageScore /= iteration;
+
+			return averageScore;
+		}
+
+		private static List<WordItem> CalculateMaxScoreForAllWords(List<WordItem> words)
+		{
+			var updatedList = words.ToList();
+
+			foreach (var word in updatedList)
+			{
+				if(word.MaxScoreEnglish == 0)
+				{					
+					word.MaxScoreEnglish = GetEnglishMaxScore(word.Word);
+				}
+
+				if (word.RussianWordScoreModels == null || !word.RussianWordScoreModels.Any())
+				{
+					word.RussianWordScoreModels = GetRussianWordScoreModels(word.Translation);
+				}
+			}
+
+			return updatedList;
+		}
+
+		private static List<RussianWordScoreModel> GetRussianWordScoreModels(string word)
+		{
+			// replace (...) with empty space
+			while (word.IndexOf("(") != -1)
+			{
+				word.Replace(word.Substring(word.IndexOf('('), word.IndexOf(')') != -1 ? word.IndexOf(')') - word.IndexOf('(') + 1 : word.Length - word.IndexOf('(')), "");
+			}
+
+			var splitValues = word.Split(", ").Select(x => x.Trim());
+			var scoreModels = new List<RussianWordScoreModel>();
+
+			foreach (var part in splitValues)
+			{
+				scoreModels.Add(new RussianWordScoreModel
+				{
+					Word = part,
+					MaxScore = FuzzyMatchingAlgorithm.FuzzyMatch(part, part)
+				});
+			}
+
+			return scoreModels;
+		}
+
+		private static int GetEnglishMaxScore(string word)
+		{
+			return FuzzyMatchingAlgorithm.FuzzyMatch(word, word);
 		}
 
 		private static string GetValue(int type, WordItem wordItem)
