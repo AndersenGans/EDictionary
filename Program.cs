@@ -67,6 +67,14 @@ namespace E2Dictionary
 
 			//Console.ReadKey();
 
+
+			//while (true)
+			//{
+			//	var t = Console.ReadLine();
+			//	var g = Console.ReadLine();
+			//	Console.WriteLine(FuzzyMatchingAlgorithm.FuzzyMatch(t, g));
+			//}			
+
 			Console.OutputEncoding = Encoding.Unicode;
 			Console.InputEncoding = Encoding.Unicode;
 
@@ -101,6 +109,8 @@ namespace E2Dictionary
 					Console.ForegroundColor = ConsoleColor.White;
 					goto start;
 			}
+
+			Console.WriteLine("Press any to exit");
 		}
 
 		private static Test AddNewWords(Test test)
@@ -111,11 +121,12 @@ namespace E2Dictionary
 			{
 				var newWord = new WordItem();
 				Console.Write("New word: ");
-				newWord.Word = Console.ReadLine();
+				newWord.Word = Console.ReadLine();				
+				Console.Write("Transcription: ");
+				var transcription = Console.ReadLine();
+				newWord.Transcription = transcription.IndexOf("[") == -1 ? $"[{transcription}]" : transcription;
 				Console.Write("Translation: ");
 				newWord.Translation = Console.ReadLine();
-				Console.Write("Transcription: ");
-				newWord.Transcription = $"[{Console.ReadLine()}]";
 				newWord.Id = _test.WordItems.Max(x => x.Id) + 1;
 				newWord.MaxScoreEnglish = GetEnglishMaxScore(newWord.Word);
 				newWord.RussianWordScoreModels = GetRussianWordScoreModels(newWord.Translation);
@@ -343,7 +354,7 @@ namespace E2Dictionary
 				testValue.Replace(testValue.Substring(testValue.IndexOf('('), testValue.IndexOf(')') != -1 ? testValue.IndexOf(')') - testValue.IndexOf('(') + 1 : testValue.Length - testValue.IndexOf('(')), "");
 			}
 
-			var splitValues = testValue.Split(", ").Select(x => x.Trim());
+			var splitValues = testValue.Split(",").Select(x => x.Trim());
 			var scoreModels = new List<RussianWordScoreModel>();
 
 			var averageScore = 0.0d;
@@ -401,7 +412,7 @@ namespace E2Dictionary
 				word.Replace(word.Substring(word.IndexOf('('), word.IndexOf(')') != -1 ? word.IndexOf(')') - word.IndexOf('(') + 1 : word.Length - word.IndexOf('(')), "");
 			}
 
-			var splitValues = word.Split(", ").Select(x => x.Trim());
+			var splitValues = word.Split(",").Select(x => x.Trim());
 			var scoreModels = new List<RussianWordScoreModel>();
 
 			foreach (var part in splitValues)
