@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace E2Dictionary
+namespace E2Dictionary.BLL
 {
-    public static class FuzzyMatchingAlgorithm
-    {
+	public class FuzzyMatchingAlgorithm
+	{
 		/// <summary>
 		/// Does a fuzzy search for a pattern within a string, and gives the search a score on how well it matched.
 		/// </summary>
 		/// <param name="stringToSearch">The string to search for the pattern in.</param>
 		/// <param name="pattern">The pattern to search for in the string.</param>
-		/// <param name="outScore">The score which this search received, if a match was found.</param>
 		/// <returns>true if each character in pattern is found sequentially within stringToSearch; otherwise, false.</returns>
 		public static int FuzzyMatch(string stringToSearch, string pattern)
 		{
-			// Score consts
+			// Score const
 			const int adjacencyBonus = 5;               // bonus for adjacent matches
 			const int separatorBonus = 10;              // bonus if match occurs after a separator
 			const int camelBonus = 10;                  // bonus if match is uppercase and prev is lower
@@ -37,10 +35,7 @@ namespace E2Dictionary
 			// Use "best" matched letter if multiple string letters match the pattern
 			char? bestLetter = null;
 			char? bestLower = null;
-			int? bestLetterIdx = null;
 			var bestLetterScore = 0;
-
-			var matchedIndices = new List<int>();
 
 			// Loop over strings
 			while (strIdx != strLength)
@@ -60,10 +55,8 @@ namespace E2Dictionary
 				if (advanced || patternRepeat)
 				{
 					score += bestLetterScore;
-					matchedIndices.Add((int)bestLetterIdx);
 					bestLetter = null;
 					bestLower = null;
-					bestLetterIdx = null;
 					bestLetterScore = 0;
 				}
 
@@ -104,7 +97,6 @@ namespace E2Dictionary
 
 						bestLetter = strChar;
 						bestLower = char.ToLower((char)bestLetter);
-						bestLetterIdx = strIdx;
 						bestLetterScore = newScore;
 					}
 
@@ -127,7 +119,6 @@ namespace E2Dictionary
 			if (bestLetter != null)
 			{
 				score += bestLetterScore;
-				matchedIndices.Add((int)bestLetterIdx);
 			}
 
 			return score;
