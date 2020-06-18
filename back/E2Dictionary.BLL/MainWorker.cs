@@ -181,8 +181,11 @@ namespace E2Dictionary.BLL
                 }
 
                 var rand = new Random().Next(0, items.Count - 1);
+				Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write($"{GetValue(testType, items[rand])} ({items.Count} left): ");
+				Console.ForegroundColor = ConsoleColor.Green;
                 updatedList.Add(CheckResult(items[rand], testType, Console.ReadLine()));
+				Console.ForegroundColor = ConsoleColor.White;
                 items.RemoveAt(rand);
             }
         }
